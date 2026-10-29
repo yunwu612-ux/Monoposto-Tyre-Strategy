@@ -1,0 +1,67 @@
+name: Build Windows App
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ "v*" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore src/MonopostoTyreStrategy/MonopostoTyreStrategy.csproj
+
+      - name: Publish portable application
+        shell: pwsh
+        run: |
+          dotnet publish src/MonopostoTyreStrategy/MonopostoTyreStrategy.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            --output "${{ github.workspace }}\publish\portable"
+
+      - name: Create portable ZIP
+        shell: pwsh
+        run: |
+          $stage = "${{ github.workspace }}\stage\portable"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item "${{ github.workspace }}\publish\portable\MonopostoTyreStrategy.exe" "$stage\Monoposto Tyre Strategy.exe"
+          Copy-Item "${{ github.workspace }}\README.md" "$stage\README.txt"
+          Compress-Archive -Path "$stage\*" -DestinationPath "${{ github.workspace }}\Monoposto-Tyre-Strategy-V1.0-Portable-Windows-x64.zip" -Force
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $env:APP_EXE = "${{ github.workspace }}\publish\portable\MonopostoTyreStrategy.exe"
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "${{ github.workspace }}\installer\MonopostoTyreStrategy.iss"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Monoposto-Tyre-Strategy-V1.0-Windows-x64
+          path: |
+            Monoposto-Tyre-Strategy-V1.0-Portable-Windows-x64.zip
+            output/Monoposto-Tyre-Strategy-V1.0-Setup-Windows-x64.exe
+          if-no-files-found: error
+          retention-days: 30
