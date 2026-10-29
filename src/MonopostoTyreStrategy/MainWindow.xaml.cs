@@ -19,12 +19,79 @@ public partial class MainWindow : Window
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MonopostoTyreStrategy");
     private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
+    // Circuit lengths and standard Grand Prix lap counts for the active 2026 F1 calendar.
+    // Bahrain and Saudi Arabia are omitted because their 2026 events were cancelled.
+    private static readonly List<CircuitInfo> Circuits =
+    [
+        new() { Name = "自定义赛道", Country = "自定义", LengthKm = 0, StandardRaceLaps = 35 },
+        new() { Name = "澳大利亚大奖赛 - 墨尔本", Country = "澳大利亚", LengthKm = 5.278, StandardRaceLaps = 58 },
+        new() { Name = "中国大奖赛 - 上海", Country = "中国", LengthKm = 5.451, StandardRaceLaps = 56 },
+        new() { Name = "日本大奖赛 - 铃鹿", Country = "日本", LengthKm = 5.807, StandardRaceLaps = 53 },
+        new() { Name = "迈阿密大奖赛", Country = "美国", LengthKm = 5.412, StandardRaceLaps = 57 },
+        new() { Name = "加拿大大奖赛 - 蒙特利尔", Country = "加拿大", LengthKm = 4.361, StandardRaceLaps = 70 },
+        new() { Name = "摩纳哥大奖赛", Country = "摩纳哥", LengthKm = 3.337, StandardRaceLaps = 78 },
+        new() { Name = "西班牙大奖赛 - 巴塞罗那", Country = "西班牙", LengthKm = 4.657, StandardRaceLaps = 66 },
+        new() { Name = "奥地利大奖赛 - 红牛环", Country = "奥地利", LengthKm = 4.318, StandardRaceLaps = 71 },
+        new() { Name = "英国大奖赛 - 银石", Country = "英国", LengthKm = 5.891, StandardRaceLaps = 52 },
+        new() { Name = "比利时大奖赛 - 斯帕", Country = "比利时", LengthKm = 7.004, StandardRaceLaps = 44 },
+        new() { Name = "匈牙利大奖赛", Country = "匈牙利", LengthKm = 4.381, StandardRaceLaps = 70 },
+        new() { Name = "荷兰大奖赛 - 赞德福特", Country = "荷兰", LengthKm = 4.259, StandardRaceLaps = 72 },
+        new() { Name = "意大利大奖赛 - 蒙扎", Country = "意大利", LengthKm = 5.793, StandardRaceLaps = 53 },
+        new() { Name = "西班牙大奖赛 - 马德里（Madring）", Country = "西班牙", LengthKm = 5.474, StandardRaceLaps = 57 },
+        new() { Name = "阿塞拜疆大奖赛 - 巴库", Country = "阿塞拜疆", LengthKm = 6.003, StandardRaceLaps = 51 },
+        new() { Name = "新加坡大奖赛", Country = "新加坡", LengthKm = 4.940, StandardRaceLaps = 62 },
+        new() { Name = "美国大奖赛 - 奥斯汀", Country = "美国", LengthKm = 5.513, StandardRaceLaps = 56 },
+        new() { Name = "墨西哥城大奖赛", Country = "墨西哥", LengthKm = 4.304, StandardRaceLaps = 71 },
+        new() { Name = "圣保罗大奖赛 - 英特拉格斯", Country = "巴西", LengthKm = 4.309, StandardRaceLaps = 71 },
+        new() { Name = "拉斯维加斯大奖赛", Country = "美国", LengthKm = 6.201, StandardRaceLaps = 50 },
+        new() { Name = "卡塔尔大奖赛 - 卢赛尔", Country = "卡塔尔", LengthKm = 5.419, StandardRaceLaps = 57 },
+        new() { Name = "阿布扎比大奖赛 - 亚斯码头", Country = "阿联酋", LengthKm = 5.281, StandardRaceLaps = 58 }
+    ];
+
+    private bool _initializingCircuit;
+
     public MainWindow()
     {
         InitializeComponent();
         Directory.CreateDirectory(_dataDirectory);
+        _initializingCircuit = true;
+        CircuitBox.ItemsSource = Circuits;
+        CircuitBox.SelectedIndex = 0;
+        _initializingCircuit = false;
         Loaded += (_, _) => Calculate();
         SizeChanged += (_, _) => DrawWearChart();
+    }
+
+    private void CircuitBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_initializingCircuit || CircuitBox.SelectedItem is not CircuitInfo circuit) return;
+        TrackNameBox.Text = circuit.Name;
+        if (circuit.LengthKm > 0)
+        {
+            CircuitLengthText.Text = $"赛道长度：{circuit.LengthKm:0.000} km · F1 标准圈数：{circuit.StandardRaceLaps}";
+            RaceLapsBox.Text = circuit.StandardRaceLaps.ToString(CultureInfo.InvariantCulture);
+        }
+        else
+        {
+            CircuitLengthText.Text = "赛道长度：自定义（未指定）";
+            RaceLapsBox.Text = circuit.StandardRaceLaps.ToString(CultureInfo.InvariantCulture);
+        }
+        UpdateRaceDistance();
+    }
+
+    private void RaceLapsBox_TextChanged(object sender, TextChangedEventArgs e) => UpdateRaceDistance();
+
+    private void UpdateRaceDistance()
+    {
+        if (RaceDistanceText is null || CircuitBox is null || RaceLapsBox is null) return;
+        var selectedCircuit = CircuitBox.SelectedItem as CircuitInfo;
+        if (selectedCircuit is null || selectedCircuit.LengthKm <= 0 ||
+            !int.TryParse(RaceLapsBox.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out int laps) || laps <= 0)
+        {
+            RaceDistanceText.Text = "当前比赛距离估算：—";
+            return;
+        }
+        RaceDistanceText.Text = $"当前比赛距离估算：{selectedCircuit.LengthKm * laps:0.000} km";
     }
 
     private RaceSettings ReadSettings()
@@ -33,6 +100,7 @@ public partial class MainWindow : Window
         return new RaceSettings
         {
             TrackName = string.IsNullOrWhiteSpace(TrackNameBox.Text) ? "自定义赛道" : TrackNameBox.Text.Trim(),
+            CircuitLengthKm = (CircuitBox.SelectedItem as CircuitInfo)?.LengthKm ?? 0,
             RaceLaps = ReadInt(RaceLapsBox, 35, 1, 200),
             BaseLapSeconds = ReadDouble(BaseLapBox, 90, 20, 300),
             PitLossSeconds = ReadDouble(PitLossBox, 22, 0, 120),
@@ -228,7 +296,17 @@ public partial class MainWindow : Window
 
     private void ApplySettings(RaceSettings s)
     {
+        var circuit = Circuits.FirstOrDefault(c => c.Name == s.TrackName);
+        _initializingCircuit = true;
+        CircuitBox.SelectedItem = circuit ?? Circuits[0];
+        _initializingCircuit = false;
         TrackNameBox.Text = s.TrackName;
+        if (circuit is not null && circuit.LengthKm > 0)
+            CircuitLengthText.Text = $"赛道长度：{circuit.LengthKm:0.000} km · F1 标准圈数：{circuit.StandardRaceLaps}";
+        else
+            CircuitLengthText.Text = s.CircuitLengthKm > 0
+                ? $"赛道长度：{s.CircuitLengthKm:0.000} km（配置）"
+                : "赛道长度：自定义（未指定）";
         RaceLapsBox.Text = s.RaceLaps.ToString(CultureInfo.InvariantCulture);
         BaseLapBox.Text = s.BaseLapSeconds.ToString(CultureInfo.InvariantCulture);
         PitLossBox.Text = s.PitLossSeconds.ToString(CultureInfo.InvariantCulture);
@@ -240,6 +318,7 @@ public partial class MainWindow : Window
         HardWearBox.Text = s.HardWearPerLap.ToString(CultureInfo.InvariantCulture);
         HardPaceBox.Text = s.HardPaceDeltaSeconds.ToString(CultureInfo.InvariantCulture);
         StartingCompoundBox.SelectedIndex = s.StartingCompound switch { "软胎" => 0, "硬胎" => 2, _ => 1 };
+        UpdateRaceDistance();
     }
 
     private void Export_Click(object sender, RoutedEventArgs e)
@@ -257,8 +336,11 @@ public partial class MainWindow : Window
 
         var settings = ReadSettings();
         var sb = new StringBuilder();
-        sb.AppendLine("MONOPOSTO TYRE STRATEGY V1.0");
+        sb.AppendLine("MONOPOSTO TYRE STRATEGY V1.1");
         sb.AppendLine($"赛道/备注：{settings.TrackName}");
+        sb.AppendLine($"赛道长度：{(settings.CircuitLengthKm > 0 ? settings.CircuitLengthKm.ToString("0.000", CultureInfo.InvariantCulture) + " km" : "未指定")}");
+        if (settings.CircuitLengthKm > 0)
+            sb.AppendLine($"比赛总距离估算：{settings.CircuitLengthKm * settings.RaceLaps:0.000} km");
         sb.AppendLine($"比赛圈数：{settings.RaceLaps}");
         sb.AppendLine($"基准单圈：{settings.BaseLapSeconds:0.00} 秒");
         sb.AppendLine($"进站损失：{settings.PitLossSeconds:0.0} 秒");

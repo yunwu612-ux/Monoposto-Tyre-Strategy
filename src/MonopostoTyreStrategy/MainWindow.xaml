@@ -1,8 +1,8 @@
 <Window x:Class="MonopostoTyreStrategy.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Monoposto Tyre Strategy V1.0" Height="850" Width="1380"
-        MinHeight="720" MinWidth="1100" WindowStartupLocation="CenterScreen"
+        Title="Monoposto Tyre Strategy V1.1" Height="900" Width="1440"
+        MinHeight="700" MinWidth="1050" WindowStartupLocation="CenterScreen"
         Background="{StaticResource BgBrush}">
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -21,12 +21,12 @@
                 <TextBlock Text="TYRE STRATEGY" FontSize="30" FontWeight="ExtraBold" Margin="0,2,0,0"/>
                 <TextBlock Text="轮胎消耗 · 进站规划 · 比赛时间估算" FontSize="13" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
             </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="计算策略" Background="{StaticResource AccentBrush}" Click="Calculate_Click" Padding="20,11"/>
-                <Button Content="保存配置" Click="Save_Click"/>
-                <Button Content="载入配置" Click="Load_Click"/>
-                <Button Content="导出报告" Click="Export_Click"/>
-            </StackPanel>
+            <WrapPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right" MaxWidth="520">
+                <Button Content="计算策略" Background="{StaticResource AccentBrush}" Click="Calculate_Click" Padding="18,11" MinHeight="42" ToolTip="根据当前参数重新计算策略"/>
+                <Button Content="保存配置" Click="Save_Click" MinHeight="42" ToolTip="将当前参数保存为 JSON"/>
+                <Button Content="载入配置" Click="Load_Click" MinHeight="42" ToolTip="载入之前保存的 JSON 配置"/>
+                <Button Content="导出报告" Click="Export_Click" MinHeight="42" ToolTip="导出当前策略比较报告"/>
+            </WrapPanel>
         </Grid>
 
         <Grid Grid.Row="1">
@@ -40,10 +40,14 @@
                     <Border Background="{StaticResource PanelBrush}" CornerRadius="12" Padding="16" Margin="0,0,0,12">
                         <StackPanel>
                             <TextBlock Text="比赛设置" FontSize="18" FontWeight="Bold" Margin="0,0,0,12"/>
+                            <TextBlock Text="F1 赛道库（2026 赛季）" Foreground="{StaticResource MutedBrush}"/>
+                            <ComboBox x:Name="CircuitBox" DisplayMemberPath="DisplayName" SelectionChanged="CircuitBox_SelectionChanged" ToolTip="选择赛道后自动填入赛道长度和 F1 标准比赛圈数"/>
+                            <TextBlock x:Name="CircuitLengthText" Text="赛道长度：自定义" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" Margin="0,0,0,3"/>
+                            <TextBlock x:Name="RaceDistanceText" Text="当前比赛距离估算：—" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,0,0,10"/>
                             <TextBlock Text="赛道 / 备注名称" Foreground="{StaticResource MutedBrush}"/>
                             <TextBox x:Name="TrackNameBox" Text="自定义赛道"/>
                             <TextBlock Text="比赛总圈数" Foreground="{StaticResource MutedBrush}"/>
-                            <TextBox x:Name="RaceLapsBox" Text="35"/>
+                            <TextBox x:Name="RaceLapsBox" Text="35" TextChanged="RaceLapsBox_TextChanged"/>
                             <TextBlock Text="基准单圈时间（秒）" Foreground="{StaticResource MutedBrush}"/>
                             <TextBox x:Name="BaseLapBox" Text="90"/>
                             <TextBlock Text="单次进站损失（秒）" Foreground="{StaticResource MutedBrush}"/>
@@ -151,6 +155,6 @@
             </Grid>
         </Grid>
 
-        <TextBlock Grid.Row="2" Text="V1.0 · 本地计算，不读取游戏内部数据 · 结果为估算值，请用实测圈速校准" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="2,12,0,0"/>
+        <TextBlock Grid.Row="2" Text="V1.1 · 内置 2026 F1 赛道长度 · 本地计算，不读取游戏内部数据 · 结果为估算值，请用实测圈速校准" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="2,12,0,0"/>
     </Grid>
 </Window>

@@ -1,5 +1,5 @@
 #define MyAppName "Monoposto Tyre Strategy"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "YunWu"
 #define MyAppExeName "MonopostoTyreStrategy.exe"
 
@@ -11,7 +11,7 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\Monoposto Tyre Strategy
 DefaultGroupName={#MyAppName}
 OutputDir=..\output
-OutputBaseFilename=Monoposto-Tyre-Strategy-V1.0-Setup-Windows-x64
+OutputBaseFilename=Monoposto-Tyre-Strategy-V1.1-Setup-Windows-x64
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

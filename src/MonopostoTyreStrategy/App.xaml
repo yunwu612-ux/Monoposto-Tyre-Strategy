@@ -38,10 +38,26 @@
             <Setter Property="Background" Value="#303B4B"/>
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="14,9"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="MinHeight" Value="38"/>
+            <Setter Property="MinWidth" Value="88"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="True"/>
+            <Setter Property="IsHitTestVisible" Value="True"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="ToolTipService.ShowDuration" Value="10000"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#46566D"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#62748B"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.55"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
         <Style TargetType="DataGrid">
             <Setter Property="Background" Value="#151B25"/>

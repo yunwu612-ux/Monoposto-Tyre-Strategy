@@ -2,9 +2,21 @@ using System.Text.Json.Serialization;
 
 namespace MonopostoTyreStrategy;
 
+public sealed class CircuitInfo
+{
+    public string Name { get; init; } = "";
+    public string Country { get; init; } = "";
+    public double LengthKm { get; init; }
+    public int StandardRaceLaps { get; init; }
+    public string DisplayName => LengthKm > 0
+        ? $"{Name}（{LengthKm:0.000} km）"
+        : Name;
+}
+
 public sealed class RaceSettings
 {
     public string TrackName { get; set; } = "自定义赛道";
+    public double CircuitLengthKm { get; set; }
     public int RaceLaps { get; set; } = 35;
     public double BaseLapSeconds { get; set; } = 90.0;
     public double PitLossSeconds { get; set; } = 22.0;
