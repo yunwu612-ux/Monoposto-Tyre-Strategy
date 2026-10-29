@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using IOPath = System.IO.Path;
 
 namespace MonopostoTyreStrategy;
 
@@ -14,7 +15,7 @@ public partial class MainWindow : Window
 {
     private List<StrategyResult> _results = [];
     private StrategyResult? _recommended;
-    private readonly string _dataDirectory = Path.Combine(
+    private readonly string _dataDirectory = IOPath.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MonopostoTyreStrategy");
     private readonly JsonSerializerOptions _jsonOptions = new() { WriteIndented = true };
 
@@ -278,7 +279,7 @@ public partial class MainWindow : Window
 
     private static string SafeFileName(string name)
     {
-        foreach (char c in Path.GetInvalidFileNameChars()) name = name.Replace(c, '_');
+        foreach (char c in IOPath.GetInvalidFileNameChars()) name = name.Replace(c, '_');
         return string.IsNullOrWhiteSpace(name) ? "Strategy" : name;
     }
 
